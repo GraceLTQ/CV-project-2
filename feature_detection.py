@@ -27,27 +27,6 @@ def inbounds(shape, indices):
 
 
 ## Compute Harris Values ############################################################
-
-def computeHarrisMatrix(dx, dy, x, y):
-    '''
-    Input: 
-        dx -- x derivative of srcImage
-        dy -- y derivative of srcImage
-        y, x -- index of a pixel in srcImage
-    Output:
-        h -- 2x2 Harris Matrix for (the 5x5 window around) pixel p
-    '''
-    h = np.zeros((2,2))
-
-    # compute harris matrix
-    h[0,0] = ndimage.gaussian_filter(dx**2, sigma = 0.5, mode='nearest', radius=2)
-    h[0,1] = ndimage.gaussian_filter(dx*dy, sigma = 0.5, mode='nearest', radius=2)
-    h[1,0] = h[0,1]
-    h[1,1] = ndimage.gaussian_filter(dy**2, sigma = 0.5, mode='nearest', radius=2)
-
-    return h
-
-
 def computeHarrisValues(srcImage):
     '''
     Input:
