@@ -93,7 +93,14 @@ def computeLocalMaximaHelper(harrisImage):
 
         # TODO 2: Compute the local maxima image
         # TODO-BLOCK-BEGIN
-        raise NotImplementedError("TODO Unimplemented")
+        
+        # Define the size of the neighborhood for local maxima detection
+        neighborhood_size = 7
+        # Apply the maximum filter with the specified neighborhood size
+        max_filter = ndimage.maximum_filter(harrisImage, size=neighborhood_size)
+        # Compare the Harris image to the maximum filter output to determine local maxima
+        destImage = harrisImage == max_filter
+
         # TODO-BLOCK-END
 
         return destImage
@@ -124,7 +131,13 @@ def detectCorners(harrisImage, orientationImage):
         # construct the corresponding corner tuple of each local maxima.
         # Return features, a list of all such features.
         # TODO-BLOCK-BEGIN
-        raise NotImplementedError("TODO Unimplemented")
+
+        destImage = computeLocalMaximaHelper(harrisImage)
+        for y in range(height):
+             for x in range(width):
+                  if destImage[y,x]:
+                       features.append((x, y, orientationImage[y,x], harrisImage[y,x]))
+
         # TODO-BLOCK-END
 
         return features
@@ -163,7 +176,8 @@ def computeMOPSDescriptors(image, features):
         # Note: use grayImage to compute features on, not the input image
         # TODO-BLOCK-BEGIN
 
-        raise NotImplementedError("TODO Unimplemented")
+        
+
         # TODO-BLOCK-END
 
         # Call the warp affine function to do the mapping
