@@ -28,31 +28,72 @@ def inbounds(shape, indices):
 
 ## Compute Harris Values ############################################################
 
+def computeHarrisMatrix(dx, dy, x, y):
+    '''
+    Input: 
+        dx -- x derivative of srcImage
+        dy -- y derivative of srcImage
+        y, x -- index of a pixel in srcImage
+    Output:
+        h -- 2x2 Harris Matrix for (the 5x5 window around) pixel p
+    '''
+    h = np.zeros((2,2))
+
+    # compute harris matrix
+    h[0,0] = ndimage.gaussian_filter(dx**2, sigma = 0.5, mode='nearest', radius=2)
+    h[0,1] = ndimage.gaussian_filter(dx*dy, sigma = 0.5, mode='nearest', radius=2)
+    h[1,0] = h[0,1]
+    h[1,1] = ndimage.gaussian_filter(dy**2, sigma = 0.5, mode='nearest', radius=2)
+
+    return h
+
+
 def computeHarrisValues(srcImage):
-        '''
-        Input:
-            srcImage -- Grayscale input image in a numpy array with
-                        values in [0, 1]. The dimensions are (rows, cols).
-        Output:
-            harrisImage -- numpy array containing the Harris score at
-                           each pixel.
-            orientationImage -- numpy array containing the orientation of the
-                                gradient at each pixel in degrees.
-        '''
-        height, width = srcImage.shape[:2]
+    '''
+    Input:
+        srcImage -- Grayscale input image in a numpy array with
+                    values in [0, 1]. The dimensions are (rows, cols).
+    Output:
+        harrisImage -- numpy array containing the Harris score at
+                        each pixel.
+        orientationImage -- numpy array containing the orientation of the
+                            gradient at each pixel in degrees.
+    '''
+    height, width = srcImage.shape[:2]
 
-        harrisImage = np.zeros(srcImage.shape[:2])
-        orientationImage = np.zeros(srcImage.shape[:2])
+    harrisImage = np.zeros(srcImage.shape[:2])
+    orientationImage = np.zeros(srcImage.shape[:2])
 
-        # TODO 1: Compute the harris corner strength for 'srcImage' at
-        # each pixel and store in 'harrisImage'. Also compute an 
-        # orientation for each pixel and store it in 'orientationImage.'
-        # TODO-BLOCK-BEGIN
-        raise NotImplementedError("TODO Unimplemented")   
-        
-        # TODO-BLOCK-END
+    # TODO 1: Compute the harris corner strength for 'srcImage' at
+    # each pixel and store in 'harrisImage'. Also compute an 
+    # orientation for each pixel and store it in 'orientationImage.'
 
-        return harrisImage, orientationImage
+    # TODO-BLOCK-BEGIN
+
+
+    # compute gradient using Sobel 
+    dx = ndimage.sobel(srcImage, 1)
+    dy = ndimage.sobel(srcImage, 0)
+
+    dx_sq = ndimage.gaussian_filter(dx**2, sigma = 0.5, mode='nearest', radius=2)
+    dx_dy = ndimage.gaussian_filter(dx*dy, sigma = 0.5, mode='nearest', radius=2)
+    dy_sq = ndimage.gaussian_filter(dy**2, sigma = 0.5, mode='nearest', radius=2)
+
+    orientationImage = np.arctan2(dy,dx)*180/np.pi
+
+    for y in range(height):
+        for x in range(width):
+            h = np.zeros((2,2))
+            h[0,0] = dx_sq[y,x]
+            h[0,1] = dx_dy[y,x]
+            h[1,0] = h[0,1]
+            h[1,1] = dy_sq[y,x]
+            harrisImage[y,x] = np.linalg.det(h) - 0.1 * np.trace(h)**2 
+
+
+    # TODO-BLOCK-END
+
+    return harrisImage, orientationImage
 
 
 ## Compute Corners From Harris Values ############################################################
