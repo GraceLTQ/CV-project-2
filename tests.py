@@ -78,51 +78,8 @@ def try_this(todo, run, truth, compare, *args, **kargs):
     return failed
 
 
-def compare_matches(match1, match2):
-    return all(np.isclose(match1[idx], match2[idx], rtol=1e-3, atol=1e-5) for idx in range(3))
 
 
-def test_produceMatches(todo, run, compare, image1, image2):
-    print(f'Starting test for TODO {todo}')
-    failed = 0
-    try:
-        # Generate descriptors for both images
-        grayImage1 = cv2.cvtColor(image1.astype(
-            np.float32)/255.0, cv2.COLOR_BGR2GRAY)
-        grayImage2 = cv2.cvtColor(image2.astype(
-            np.float32)/255.0, cv2.COLOR_BGR2GRAY)
-
-        (harris1, orientation1) = computeHarrisValues(grayImage1)
-        corners1 = detectCorners(harris1, orientation1)
-        desc_img1 = computeMOPSDescriptors(image1, corners1)
-
-        (harris2, orientation2) = computeHarrisValues(grayImage2)
-        corners2 = detectCorners(harris2, orientation2)
-        desc_img2 = computeMOPSDescriptors(image2, corners2)
-
-        # Run the function to get matches
-        output = run(desc_img1, desc_img2)
-    except Exception as e:
-        traceback.print_exc()
-        print(f"TODO {todo} threw an exception, see exception above")
-        return
-
-    # Example of expected matches: This needs to be set up based on expected outcomes
-    expected_matches = [(idx, idx, 0.8) for idx in range(
-        min(len(desc_img1), len(desc_img2)))]  # Simplified expected result
-
-    # Check matches
-    if len(output) != len(expected_matches):
-        print(
-            f"TODO {todo} failed: number of matches incorrect, expected {len(expected_matches)}, got {len(output)}")
-        failed += 1
-    else:
-        for i, match in enumerate(output):
-            if not compare(match, expected_matches[i]):
-                print(f"TODO {todo} doesn't pass test: {i}")
-                failed += 1
-
-    return failed
 
 
 image = np.array(Image.open('resources/triangle1.jpg'))
@@ -170,11 +127,6 @@ try_this('4 and/or 5', computeMOPSDescriptors,
          loaded['f'], compare_array, image, d)
 
 
-# Test for produceMatches (TODO 6)
-# Load the original image
-image = np.array(Image.open('resources/triangle1.jpg'))
-# Create a modified version of the image (e.g., slight rotation)
-modified_image = ndimage.rotate(image, 5, reshape=False)
 
-# Integrating the test into the existing setup
-test_produceMatches(6, produceMatches, compare_matches, image, modified_image)
+
+

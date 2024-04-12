@@ -224,9 +224,7 @@ def computeMOPSDescriptors(image, features):
 def produceMatches(desc_img1, desc_img2):
     """
     Input:
-        corners_img1 -- list of corners produced by detectCorners on image 1
         desc_img1 -- corresponding set of MOPS descriptors for image 1
-        corners_img2 -- list of corners produced by detectCorners on image 2
         desc_img2 -- corresponding set of MOPS descriptors for image 2
 
     Output:
@@ -259,9 +257,17 @@ def produceMatches(desc_img1, desc_img2):
 
     # Calculate the pairwise distances between descriptors
     dist_matrix = spatial.distance.cdist(desc_img1, desc_img2, 'euclidean')
+    dist_matrix = dist_matrix**2
+
+
+    dist_matrix[dist_matrix < 1e-5] = 1
+    if (len(desc_img1) < 2 or len(desc_img2) < 2):
+        dist_matrix = np.zeros((desc_img1.shape[0],desc_img2.shape[0]))
+    
 
     # Iterate over each descriptor in image 1
-    for idx1, distances in enumerate(dist_matrix):
+    for idx1, distances in enumerate(dist_matrix):           
+
         # Get the indices of the sorted distances (ascending)
         sorted_indices = np.argsort(distances)
 
@@ -269,11 +275,9 @@ def produceMatches(desc_img1, desc_img2):
         closest, second_closest = sorted_indices[0], sorted_indices[1]
         closest_distance, second_closest_distance = distances[closest], distances[second_closest]
 
-        # Apply the ratio test to determine if the match is good
-        if closest_distance < second_closest_distance * 0.8:
-            # The score can be defined as the ratio of the distances
-            score = closest_distance / second_closest_distance
-            matches.append((idx1, closest, score))
+        # The score can be defined as the ratio of the distances
+        score = closest_distance / second_closest_distance
+        matches.append((idx1, closest, score))
     # TODO-BLOCK-END
 
     return matches
