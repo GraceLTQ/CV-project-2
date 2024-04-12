@@ -192,7 +192,7 @@ def computeMOPSDescriptors(image, features):
             np.array([windowSize / 2, windowSize / 2, 0]))
 
         # Combine transformations into a single matrix and extract the upper-left 2x3 matrix for 2D affine transformation
-        transMx_3D = T2 @ R @ S @ T1
+        transMx_3D = T2 @ S @ R @ T1
         transMx = transMx_3D[:2, :3]  # Extract 2x3 matrix for cv2.warpAffine
 
         # TODO-BLOCK-END
