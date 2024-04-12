@@ -193,6 +193,7 @@ def computeMOPSDescriptors(image, features):
 
         # Combine transformations into a single matrix and extract the upper-left 2x3 matrix for 2D affine transformation
         transMx_3D = T2 @ S @ R @ T1
+        transMx_3D[:, 2] = transMx_3D[:, 3]
         transMx = transMx_3D[:2, :3]  # Extract 2x3 matrix for cv2.warpAffine
 
         # TODO-BLOCK-END
@@ -208,7 +209,7 @@ def computeMOPSDescriptors(image, features):
         # Normalize the descriptor
         mean = np.mean(destImage)
         std = np.std(destImage)
-        if std < 1e-10:
+        if std ** 2 < 1e-10:
             desc[i, :] = 0  # Avoid division by zero or near zero variance
         else:
             normalized = (destImage - mean) / std
@@ -255,7 +256,24 @@ def produceMatches(desc_img1, desc_img2):
     # Note: multiple features from the first image may match the same
     # feature in the second image.
     # TODO-BLOCK-BEGIN
-    raise NotImplementedError("TODO Unimplemented")
+
+    # Calculate the pairwise distances between descriptors
+    dist_matrix = spatial.distance.cdist(desc_img1, desc_img2, 'euclidean')
+
+    # Iterate over each descriptor in image 1
+    for idx1, distances in enumerate(dist_matrix):
+        # Get the indices of the sorted distances (ascending)
+        sorted_indices = np.argsort(distances)
+
+        # Get the smallest and second smallest distance
+        closest, second_closest = sorted_indices[0], sorted_indices[1]
+        closest_distance, second_closest_distance = distances[closest], distances[second_closest]
+
+        # Apply the ratio test to determine if the match is good
+        if closest_distance < second_closest_distance * 0.8:
+            # The score can be defined as the ratio of the distances
+            score = closest_distance / second_closest_distance
+            matches.append((idx1, closest, score))
     # TODO-BLOCK-END
 
     return matches
