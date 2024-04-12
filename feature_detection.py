@@ -180,7 +180,6 @@ def computeMOPSDescriptors(image, features):
         angle = np.radians(-angle)
 
         # Adjustments for 3D transformation functions
-        # 3D translation vector with zero z-component
         trans_vec = np.array([-x, -y, 0])
         # Scale factors with unity z-component to ignore depth scaling
         s_x, s_y, s_z = 0.2, 0.2, 1
@@ -193,13 +192,11 @@ def computeMOPSDescriptors(image, features):
             np.array([windowSize / 2, windowSize / 2, 0]))
 
         # Combine transformations into a single matrix and extract the upper-left 2x3 matrix for 2D affine transformation
-        transMx_3D = np.dot(np.dot(np.dot(T2, S), R), T1)
+        transMx_3D = T2 @ R @ S @ T1
         transMx = transMx_3D[:2, :3]  # Extract 2x3 matrix for cv2.warpAffine
 
         # TODO-BLOCK-END
 
-        # Call the warp affine function to do the mapping
-        # It expects a 2x3 matrix
         destImage = cv2.warpAffine(grayImage, transMx,
                                    (windowSize, windowSize), flags=cv2.INTER_LINEAR)
 
@@ -212,10 +209,11 @@ def computeMOPSDescriptors(image, features):
         mean = np.mean(destImage)
         std = np.std(destImage)
         if std < 1e-10:
-            desc[i] = np.zeros(windowSize * windowSize)
+            desc[i, :] = 0  # Avoid division by zero or near zero variance
         else:
             normalized = (destImage - mean) / std
-            desc[i] = normalized.flatten()
+            # Store the normalized descriptor
+            desc[i, :] = normalized.flatten()
         # TODO-BLOCK-END
 
     return desc
